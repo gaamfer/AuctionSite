@@ -1,0 +1,49 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    <div class="search-container">
+        <div class="search-bar">
+            <form action="..." method="get">
+                <input class="search_bar" type="text" placeholder="Search Listing..." name="q">
+            </form>
+            <form action="..." method="get">
+                <select name="category" id="">
+                    {% for category in categories %}
+                        <option value="..." >{{category}}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            <div class="userinfo" style="position: absolute; right: 20px;">
+                {% if user.is_authenticated %}
+                <a href="{% url 'auctions:watchlist' user.id %}" class="button" style="text-decoration:underline;margin-right: 20px">Watchlist</a>
+                <a href="{% url 'auctions:add_listing' %}" class="button" style="text-decoration:underline;">Create a Listing</a>
+                <a href="{% url 'auctions:mylistings' user.id %}" class="button" style="text-decoration:underline;margin-left:20px;">My Listings</a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+    <hr>
+    <h2>Active Listings</h2>
+    <ul>
+        {% for listing in listings %}
+            <div style="margin-bottom: 20px; margin-top: 50px;">
+                <img src="{{listing.ImageUrls.url}}" alt="{{listing.ImageUrls.url}}" width="500" height="500">
+                <a href="{% url 'auctions:listing' listing.id %}" style="text-decoration:underline;">{{listing|linebreaks}}</a>
+                {% if user.is_authenticated %}
+                    <form action="{% url 'auctions:add_to_watchlist' listing.id user.id %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button class="watchlist_btn" style="background-color: yellowgreen; font-size: 12px; font-weight: bold;"> Add to Watchlist </button>
+                    </form>
+                {% else %}
+                    <form action="{% url 'auctions:login' %}">
+                        <button class="watchlist_btn" style="background-color: yellowgreen; font-size: 12px; font-weight: bold;"> Add to Watchlist </button>
+                    </form>
+                {% endif %}
+            </div>
+        {% empty %}
+            <li style="color: red; font-size: 18px;">No listings available</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

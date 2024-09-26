@@ -1,0 +1,10 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+        {% for listing in mylistings %}
+        <img src="{{listing_img}}" width="500" height="600">
+            <a href="{% url 'auctions:listing' listing.id %}" style="text-decoraration:underline;">{{listing | linebreaks}}</a>
+        {% empty %}
+            <h1 style="color: red; font-size: 30px;">You have no Listings</h1>
+        {% endfor %}
+{% endblock %}
