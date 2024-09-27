@@ -11,7 +11,7 @@ class CategoryForm(forms.Form):
 class ListingForm(forms.ModelForm):
    class Meta:
        model = Listing
-       exclude = ["creator", "Status", "Watchlist"]
+       exclude = ["creator", "Status", "Watchlist", "created_at", "updated_at"]
        # Here I just label the fields with akward names deifined in models
        labels = {
            'BidVal': 'Starting Price',

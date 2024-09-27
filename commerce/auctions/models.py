@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.utils import timezone
+from datetime import timedelta
 
 import datetime
 
@@ -36,6 +38,28 @@ class Listing(models.Model):
     Status= models.BooleanField(default=False)
     Duration = models.DurationField()
     Watchlist = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def time_left(self):
+        end_time = self.created_at + self.Duration
+        current_time = timezone.now()
+        time_left = end_time - current_time
+        return max(time_left, timedelta(seconds=0))# ensures if time_left is negative, it returns 0
+    
+    def time_left_str(self):
+        time_left = self.time_left()
+        days = time_left.days
+        hours, remainder = divmod(time_left.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return f"{days} days, {hours} hours, {minutes} minutes, {seconds} seconds"
+    
+    def check_update_status(self):
+        if self.time_left() == timedelta(seconds=0) and self.Status:
+            self.Status = False
+            self.save()
+            
+
     def __str__(self):
         return (
             f"ID: {self.id} \n"
@@ -43,6 +67,8 @@ class Listing(models.Model):
             f"Title: {self.title} \n"
             f"Price: {self.BidVal}, Status: {'Active' if self.Status else 'Inactive'}"
         )
+    
+
 
 
 class Comment(models.Model):

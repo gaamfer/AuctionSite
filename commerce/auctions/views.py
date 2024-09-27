@@ -4,16 +4,20 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
+
 from .models import User, Bid, Listing, Comment
 from auctions.forms import ListingForm, CommentForm, BidForm
 
 
 def index(request):
-    all_listings = Listing.objects.all()
-    return render(request, "auctions/index.html", {
-        "listings": all_listings
-    })
+    active_listings = Listing.objects.filter(Status=True)
+    
+    for listing in active_listings:
+        listing.check_update_status()
 
+    return render(request, "auctions/index.html", {
+        "listings": active_listings
+    })
 
 def login_view(request):
     if request.method == "POST":
@@ -73,6 +77,7 @@ def add_listing(request):
         if form.is_valid():
             listing = form.save(commit=False)
             listing.creator = request.user # setting the signed_In user to the default creator
+            listing.Status = True
             listing.save()
             return HttpResponseRedirect(reverse("auctions:index"))
     else:
@@ -83,12 +88,14 @@ def add_listing(request):
     })
 
 def listing(request, listing_id):
+
     if listing_id is None:
         return HttpResponse(f"<h1> {listing_id} not found </h1>")
 
     listing = Listing.objects.get(id=listing_id)
     return render(request, "auctions/listing.html", {
-        "listings":listing
+        "listing":listing,
+        'time_left': listing.time_left()
     })
 
 def mylistings(request, user_id):

@@ -1,8 +1,12 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
+    <h1 style="text-decoration: underline; color: yellowgreen; margin: 50px; text-align: left;">My Watchlist</h1>
         {% for listing in watchlist %}
-            <a href="{% url 'auctions:listing' listing.id %}" style="text-decoration:underline;">{{listing}}</a>
+            <div>
+                <img src="{{listing.ImageUrls.url}}" alt="{{listing.ImageUrls.url}}" width="500" height="500">
+                <a href="{% url 'auctions:listing' listing.id %}" style="text-decoration:underline;">{{listing | linebreaks }}</a>
+            </div>
         {% empty %}
             <h1 style="color: red; font-size: 30px;">You have no Listings Added</h1>
         {% endfor %}

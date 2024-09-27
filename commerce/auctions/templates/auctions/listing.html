@@ -1,5 +1,18 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    {{listing}}
+    <div style="margin-bottom: 20px; margin-top: 50px;">
+        <img src="{{listing.ImageUrls.url}}" alt="{{listing.ImageUrls.url}}" width="500" height="500">
+        <p style="text-decoration:underline;">{{listing|linebreaks}}</p>
+        {% if user.is_authenticated %}
+            <form action="{% url 'auctions:add_to_watchlist' listing.id user.id %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button class="watchlist_btn" style="background-color: yellowgreen; font-size: 12px; font-weight: bold;"> Add to Watchlist </button>
+            </form>
+        {% else %}
+            <form action="{% url 'auctions:login' %}">
+                <button class="watchlist_btn" style="background-color: yellowgreen; font-size: 12px; font-weight: bold;"> Add to Watchlist </button>
+            </form>
+        {% endif %}
+    </div>
 {% endblock %}
