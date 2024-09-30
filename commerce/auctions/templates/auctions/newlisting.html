@@ -1,12 +1,45 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h1> Create a new listing</h1>
-    <div>
+    <h1 style="margin-top: 50px;"> Create a new listing</h1>
+    <div style="background-color: rgb(208, 231, 131); width: fit-content; padding: 40px; border-radius: 20px; margin: 20px;">
         <form action="{% url 'auctions:add_listing' %}" method='post' enctype="multipart/form-data">
             {% csrf_token %}
-            {{ listing_form.as_p }}
-            <button type="submit">Submit</button>
+                <!-- Render all fields except days and hours -->
+                {% for field in form %}
+                    {% if field.name not in "days hours" %}
+                        <div class="form-group">
+                            <label style="font-weight: bold;" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                
+                <!-- Manually render days and hours fields -->
+                <div class="Duration_fields" style="background-color: grey; width: fit-content; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                    <h4>Set Listing Duration</h4>
+                    <div class="form-group">
+                        <label for="{{ form.days.id_for_label }}">{{ form.days.label }}</label>
+                        {{ form.days }}
+                        {% for error in form.days.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.hours.id_for_label }}">{{ form.hours.label }}</label>
+                        {{ form.hours }}
+                        {% for error in form.hours.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            <button type="submit" style="float: right; color: white; background-color: indigo; border-radius: 5px;">Submit</button>
         </form>
     </div>
 {% endblock %}

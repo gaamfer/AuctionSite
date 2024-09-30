@@ -1,23 +1,51 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 
 
-from .models import User, Bid, Listing, Comment
+from .models import User, Bid, Listing, Comment, Category
 from auctions.forms import ListingForm, CommentForm, BidForm
 
 
 def index(request):
     active_listings = Listing.objects.filter(Status=True)
+    categories = Category.objects.all()
     
     for listing in active_listings:
         listing.check_update_status()
 
     return render(request, "auctions/index.html", {
-        "listings": active_listings
+        "listings": active_listings,
+        "categories": categories
     })
+
+def refined_view(request):
+    category_id = request.GET.get('category')
+    search_query = request.GET.get('q', '')
+    categories = Category.objects.all()
+
+    if not category_id and not search_query:
+        return redirect('auctions:index')
+    
+    listings = Listing.objects.filter(Status=True)
+
+    if category_id:
+        try:
+            category = Category.objects.get(id=category_id)
+            listings = listings.filter(ProductCat=category)
+        except Category.DoesNotExist:
+            return redirect('auctions:index')
+        
+    if search_query:
+        listings = listings.filter(title__icontains=search_query)
+    
+    return render(request, "auctions/index.html", {
+        "listings": listings,
+        "categories": categories
+    })
+
 
 def login_view(request):
     if request.method == "POST":
@@ -77,6 +105,7 @@ def add_listing(request):
         if form.is_valid():
             listing = form.save(commit=False)
             listing.creator = request.user # setting the signed_In user to the default creator
+            listing.Duration = form.cleaned_data["Duration"]
             listing.Status = True
             listing.save()
             return HttpResponseRedirect(reverse("auctions:index"))
@@ -84,11 +113,10 @@ def add_listing(request):
         form = ListingForm()
 
     return render(request, 'auctions/newlisting.html', {
-        'listing_form' : form
+        'form' : form
     })
 
 def listing(request, listing_id):
-
     if listing_id is None:
         return HttpResponse(f"<h1> {listing_id} not found </h1>")
 
@@ -133,3 +161,23 @@ def add_to_watchlist(request, listing_id, user_id):
             return HttpResponseRedirect(reverse("auctions:watchlist", kwargs={"user_id": user_id}))
 
     return HttpResponseRedirect(reverse("auctions:index"))
+
+def remove_from_watchlist(request, listing_id, user_id):
+    if request.method == "POST":
+        # definig the listing and the user
+        listing = Listing.objects.get(id=listing_id)
+        theuser = User.objects.get(id=user_id)
+        if not theuser.mywatchlist.filter(id=listing_id).exists():
+            return HttpResponse(f"<h1> {listing.title} already not in your watchlist </h1>")
+        else:
+            theuser.mywatchlist.remove(listing)
+            listing.Watchlist = False
+            listing.save() # just save the listing state
+            # i dont need to save theuser because itt is a ManyToManyField
+            return HttpResponseRedirect(reverse("auctions:watchlist", kwargs={"user_id": user_id}))
+
+    return HttpResponseRedirect(reverse("auctions:watchlist", kwargs={"user_id": user_id}))
+
+
+def add_comment(request, listing_id):
+    theuser = request.GET.get('user')

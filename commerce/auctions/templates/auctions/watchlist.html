@@ -3,11 +3,23 @@
 {% block body %}
     <h1 style="text-decoration: underline; color: yellowgreen; margin: 50px; text-align: left;">My Watchlist</h1>
         {% for listing in watchlist %}
-            <div>
-                <img src="{{listing.ImageUrls.url}}" alt="{{listing.ImageUrls.url}}" width="500" height="500">
-                <a href="{% url 'auctions:listing' listing.id %}" style="text-decoration:underline;">{{listing | linebreaks }}</a>
+            <div style="margin-bottom: 20px; margin-top: 50px; background-color: rgb(17, 232, 232); border-radius: 10px; width: fit-content; padding: 40px;">
+                <a href="{% url 'auctions:listing' listing.id %}">
+                    <h3 style="text-shadow: 2px 2px 5px lightblue; font-weight: bold;">{{listing.title}}</h3>
+                    <p style="color: blue; font-weight: bold; font-size: x-small;">Created by: {{listing.creator}}</p>
+                    <img src="{{listing.ImageUrls.url}}" alt="{{listing.ImageUrls.url}}" width="500" height="500">
+                    <p style="text-decoration:underline;">{{listing.description}}</p>
+                    <p>
+                        <span style="color: red; font-weight: bold;">Time Left: <p style="color: black; font-weight: bold;">{{listing.time_left_str}}</p></span>
+                        <span style="color: green; font-weight: bold;">Current Bid: <p style="color: black; font-weight: bold;">{{listing.BidVal}} €</p></span>
+                    </p>
+                </a>
+                    <form action="{% url 'auctions:remove_from_watchlist' listing.id user.id %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button class="watchlist_btn" style="background-color: rgb(241, 10, 10); font-size: 12px; font-weight: bold;"> Remove </button>
+                    </form>
             </div>
         {% empty %}
-            <h1 style="color: red; font-size: 30px;">You have no Listings Added</h1>
+            <li style="color: red; font-size: 18px;">No listings available</li>
         {% endfor %}
 {% endblock %}

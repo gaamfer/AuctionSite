@@ -1,10 +1,20 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
+    <h1 style="text-decoration: underline; color: rgb(131, 140, 112); margin: 50px; text-align: left;">My Listings</h1>
         {% for listing in mylistings %}
-        <img src="{{listing_img}}" width="500" height="600">
-            <a href="{% url 'auctions:listing' listing.id %}" style="text-decoraration:underline;">{{listing | linebreaks}}</a>
+            <div style="margin: 20px; margin-top: 50px; background-color: rgb(17, 232, 232); border-radius: 10px; width: fit-content; padding: 40px;">
+                <h3 style="text-shadow: 2px 2px 5px lightblue; font-weight: bold;">{{listing.title}}</h3>
+                <p style="color: blue; font-weight: bold; font-size: x-small;">Created by: {{listing.creator}}</p>
+                <img src="{{listing.ImageUrls.url}}" alt="{{listing.ImageUrls.url}}" width="500" height="500">
+                <p style="text-decoration:underline;">{{listing.description}}</p>
+                <p>
+                    <span style="color: red; font-weight: bold;">Time Left: <p style="color: black; font-weight: bold;">{{listing.time_left_str}}</p></span>
+                    <span style="color: green; font-weight: bold;">Current Bid: <p style="color: black; font-weight: bold;">{{listing.BidVal}} €</p></span>
+                </p>
+            </div>
         {% empty %}
-            <h1 style="color: red; font-size: 30px;">You have no Listings</h1>
+            <li style="color: red; font-size: 18px;">No listings available</li>
         {% endfor %}
 {% endblock %}
+
