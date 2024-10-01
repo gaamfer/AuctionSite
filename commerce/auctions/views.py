@@ -119,11 +119,21 @@ def add_listing(request):
 def listing(request, listing_id):
     if listing_id is None:
         return HttpResponse(f"<h1> {listing_id} not found </h1>")
-
+    
     listing = Listing.objects.get(id=listing_id)
+    show_comment_form = request.method == 'POST' and 'show_comment_form' in request.POST
+    show_bid_form = request.method == 'POST' and 'show_bid_form' in request.POST
+
+    cform = CommentForm() if show_comment_form else None
+    bform = BidForm(listing=listing) if show_bid_form else None
+
     return render(request, "auctions/listing.html", {
         "listing":listing,
-        'time_left': listing.time_left()
+        'time_left': listing.time_left(),
+        'cform': cform,
+        'show_comment_form': show_comment_form, 
+        'bform': bform,
+        'show_bid_form': show_bid_form
     })
 
 def mylistings(request, user_id):
@@ -180,4 +190,32 @@ def remove_from_watchlist(request, listing_id, user_id):
 
 
 def add_comment(request, listing_id):
-    theuser = request.GET.get('user')
+    
+    listing = Listing.objects.get(id=listing_id)
+
+    if request.method == 'POST':
+        cform = CommentForm(request.POST)
+        if cform.is_valid():
+            comment = cform.save(commit=False)
+            comment.user = request.user
+            comment.listing = listing
+            comment.save()
+            return redirect('auctions:listing', listing_id=listing.id)
+    
+    return redirect('auctions:listing', listing_id=listing.id)
+
+def new_bid(request, listing_id):
+    listing = Listing.objects.get(id=listing_id)
+
+    if request.method == 'POST':
+        bform = BidForm(request.POST, listing=listing)
+        if bform.is_valid():
+            bid = bform.save(commit=False)
+            bid.username = request.user
+            bid.listing = listing
+            bid.save()
+            listing.BidVal = bid.BidValue
+            listing.save()
+            return redirect('auctions:listing', listing_id=listing.id)
+        
+    return redirect('auctions:listing', listing_id=listing.id)

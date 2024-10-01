@@ -41,18 +41,37 @@ class ListingForm(forms.ModelForm):
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
-        exclude =["time_sent"]
+        exclude =["time_sent", "user", "listing"]
         # Here I just label the fields with akward names deifined in models
         labels = {
-            "thecomment" : "Description"
+            "thecomment" : "Comment"
         }
 
 class BidForm(forms.ModelForm):
     class Meta:
         model = Bid
-        exclude = ["order_time"]
-        # Here I just label the fields with akward names deifined in models
+        exclude = ["order_time", "username", "listing"]
         labels = {
             'BidValue': 'Amount to Bid',
             'Bid_startime': 'When to start the Bid'
         }
+        widgets = {
+            'BidValue': forms.TextInput(attrs={'placeholder': 'Higher than Current €', 'style': 'text-align: right;'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.listing = kwargs.pop('listing', None)  # Get listing object if provided
+        super().__init__(*args, **kwargs)
+
+    def clean_BidValue(self):
+        bid_value = self.cleaned_data.get('BidValue')
+
+        # Ensure we have a listing object
+        if self.listing is None:
+            raise forms.ValidationError("Listing is required for bid validation.")
+
+        # Check that the bid value is greater than the current listing bid value
+        if bid_value <= self.listing.BidVal:
+            raise forms.ValidationError(f"Bid must be greater than the current value of €{self.listing.BidVal}.")
+
+        return bid_value

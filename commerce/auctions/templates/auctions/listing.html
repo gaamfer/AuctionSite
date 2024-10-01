@@ -11,14 +11,74 @@
             <span style="color: green; font-weight: bold;">Current Bid: <p style="color: black; font-weight: bold;">{{listing.BidVal}} €</p></span>
         </p>
         {% if user.is_authenticated %}
+
+            <!-- Add to wacthlist button -->
             <form action="{% url 'auctions:add_to_watchlist' listing.id user.id %}" method="post" style="display: inline;">
                 {% csrf_token %}
                 <button class="watchlist_btn" style="background-color: yellowgreen; font-size: 12px; font-weight: bold;"> Add to Watchlist </button>
             </form>
+
+            <!-- Add comment button -->
+            <form  method="post" style="display: inline;">
+                {% csrf_token %}
+                <button  type="submit" name="show_comment_form" style="background-color: rgb(255, 255, 255); font-size: 12px; font-weight: bold;"> Add Comment </button>
+            </form>
+            
+            <!-- Make a bid Button -->
+            <form  method="post" style="display: inline;">
+                {% csrf_token %}
+                <button  type="submit" name="show_bid_form" style="background-color: rgb(18, 66, 189); font-size: 12px; color:white; font-weight: bold;"> Make a Bid </button>
+            </form>
+
         {% else %}
+
+            <!-- Redirect non-auth-users to login url -->
             <form action="{% url 'auctions:login' %}">
                 <button class="watchlist_btn" style="background-color: yellowgreen; font-size: 12px; font-weight: bold;"> Add to Watchlist </button>
             </form>
+            <form  action="{% url 'auctions:login' %}" style="display: inline;">
+                {% csrf_token %}
+                <button  type="submit" name="show_comment_form" style="background-color: rgb(255, 255, 255); font-size: 12px; font-weight: bold;"> Add Comment </button>
+            </form>
+            <form  action="{% url 'auctions:login' %}" style="display: inline;">
+                {% csrf_token %}
+                <button  type="submit" name="show_bid_form" style="background-color: rgb(18, 66, 189); color:white;font-size: 12px; font-weight: bold;"> Make a Bid </button>
+            </form>
+
+        {% endif %}
+
+        <!-- Display CommentForm if button cliicked -->
+        {% if show_comment_form %}
+            <hr>
+            <h2>Add a Comment:</h2>
+            <form action="{% url 'auctions:add_comment' listing.id %}" method="post">
+                {% csrf_token %}
+                {{ cform.as_p }}
+                <button type="submit">Submit Comment</button>
+            </form>
+        {% endif %}
+
+        <!-- Display BidForm if button cliicked -->
+        {% if show_bid_form %}
+            <hr>
+            <h2>Place a Bid:</h2>
+            <form action="{% url 'auctions:new_bid' listing.id %}" method="post">
+                {% csrf_token %}
+                {{ bform.as_p }}
+                {% if bform.errors %}
+                    <div style="color: red;">{{ bform.errors }}</div>
+                {% endif %}
+                <button type="submit">Place Bid</button>
+            </form>
         {% endif %}
     </div>
+
+    <!-- Existing comments section -->
+    <h2>Comments:</h2>
+    <ul>
+        {% for comment in listing.review.all %}
+            <li><strong>{{ comment.user.username }}</strong>: {{ comment.thecomment }}</li>
+        {% endfor %}
+    </ul>
+        
 {% endblock %}

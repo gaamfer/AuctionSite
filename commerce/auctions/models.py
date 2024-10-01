@@ -18,14 +18,6 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-class Bid(models.Model):
-    username = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userbid")
-    BidValue=models.FloatField()
-    order_time=models.DateTimeField(default=datetime.datetime.now)
-    Bid_startime=models.DateTimeField()
-
-    def __str__(self):
-        return f"Order {self.id}: {self.username} at {self.order_time} with a value of {self.BidValue}"
 
 class Listing(models.Model):
     # title, description, startingBidValue, Product_category, URL Image, Status, Watchlist
@@ -40,6 +32,10 @@ class Listing(models.Model):
     Watchlist = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+    def __str__(self):
+        return f"Order {self.id}: {self.username} at {self.order_time} with a value of {self.BidValue}"
     
     def time_left(self):
         end_time = self.created_at + self.Duration
@@ -69,16 +65,21 @@ class Listing(models.Model):
         )
     
 
+class Bid(models.Model):
+    listing = models.ForeignKey(Listing, default=None, on_delete=models.CASCADE, related_name="last_bid")
+    username = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bid")
+    BidValue = models.FloatField()
+    order_time = models.DateTimeField(default=datetime.datetime.now)
 
 
 class Comment(models.Model):
     # src_user, text-based, time_sent, listing_related
     listing= models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="review")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comment")
-    title=models.CharField(default="Title Here", validators=[MinLengthValidator(5)], max_length=30)
-    thecomment=models.CharField(validators=[MinLengthValidator(30)], max_length=500, default="write your comment here")
-    time_sent = models.DateTimeField()
+    title=models.CharField(default="Title Here", validators=[MinLengthValidator(5)], max_length=15)
+    thecomment=models.CharField(validators=[MinLengthValidator(10)], max_length=500, default="write your comment here")
+    time_sent = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.id} made at {self.time_sent} on {self.listing}."
+        return f"{self.user} \n {self.title} \n {self.thecomment} \n {self.time_sent}."
 
